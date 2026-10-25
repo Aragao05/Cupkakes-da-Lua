@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
+<html lang="pt-BR"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cupcakes da Lua</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
 <style>
 /* =====================================================================
    1. CORES E FONTES  (para mudar o visual, altere só as variáveis abaixo)
@@ -176,11 +175,11 @@ label.bt { cursor: pointer; }
 <header class="topo">
   <div class="topo-interno">
     <a class="logo" href="#inicio" aria-label="Cupcakes da Lua, início">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="#f7d774"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="#f7d774"></path></svg>
       Cupcakes da Lua
     </a>
     <div class="topo-acoes">
-      <button class="btn-admin" id="abrirAdmin" hidden>Painel da loja</button>
+      <button class="btn-admin" id="abrirAdmin" hidden="">Painel da loja</button>
       <button class="btn-carrinho" id="abrirCarrinho" aria-label="Abrir carrinho">
         Carrinho <span class="contador" id="contador">0</span>
       </button>
@@ -230,21 +229,21 @@ label.bt { cursor: pointer; }
 <div class="toast" id="toast" role="status"></div>
 
 <!-- ===================== PAINEL DO DONO (só aparece para quem pode editar a página) ===================== -->
-<section class="admin" id="admin" hidden aria-label="Painel da loja">
+<section class="admin" id="admin" hidden="" aria-label="Painel da loja">
   <div class="adm-topo">
     <h2>Painel da loja</h2>
     <div class="topo-acoes">
       <span id="admMsg" role="status"></span>
       <button class="bt" id="admFechar">Fechar</button>
       <button class="bt" id="admBaixar">Baixar site atualizado</button>
-      <button class="bt primario" id="admPublicar" disabled>Publicar no GitHub</button>
+      <button class="bt primario" id="admPublicar" disabled="">Publicar no GitHub</button>
     </div>
   </div>
   <div class="adm-corpo">
     <div class="resumo" id="admResumo"></div>
     <p class="nota">As mudanças só chegam aos clientes depois de “Publicar no GitHub” (ou de baixar o site atualizado e enviar o arquivo ao GitHub). Pedidos feitos pelo WhatsApp não baixam o estoque sozinhos: ao confirmar uma venda, use o botão − do produto.</p>
     <div class="adm-barra"><h3>Cupcakes</h3><button class="bt primario" id="admNovo">Adicionar cupcake</button></div>
-    <div class="adm-form" id="admForm" hidden></div>
+    <div class="adm-form" id="admForm" hidden=""></div>
     <div id="admLista"></div>
     <label class="zap">WhatsApp que recebe os pedidos (país + DDD + número)<input id="admZap" inputmode="numeric"></label>
 
@@ -260,7 +259,7 @@ label.bt { cursor: pointer; }
     <h3 class="titulo-sec">Segurança e backup</h3>
     <div class="acoes-adm">
       <button class="bt" id="admBackup">Baixar backup dos dados</button>
-      <label class="bt">Importar backup<input type="file" id="admImportar" accept="application/json,.json" hidden></label>
+      <label class="bt">Importar backup<input type="file" id="admImportar" accept="application/json,.json" hidden=""></label>
       <button class="bt" id="admSenha">Trocar senha</button>
       <button class="bt perigo" id="admSair">Sair do painel</button>
     </div>
@@ -271,7 +270,7 @@ label.bt { cursor: pointer; }
 <script type="application/json" id="dados-loja">
 {
  "whatsapp": "5566999999999",
- "senhaHash": "",
+ "senhaHash": "83eea9ae988e08d2695dd63455bd1c825bc5d75a1603071e160f973ab8466fac",
  "produtos": [
   {
    "id": "lua-cheia",
@@ -946,6 +945,4 @@ $("admin").addEventListener("change", (e) => {
 });
 
 iniciarAdmin();
-</script>
-</body>
-</html>
+</script></body></html>
