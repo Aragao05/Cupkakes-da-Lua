@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head>
+<html lang="pt-BR">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cupcakes da Lua</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 /* =====================================================================
    1. CORES E FONTES  (para mudar o visual, altere só as variáveis abaixo)
@@ -161,6 +162,29 @@ footer { text-align: center; color: var(--texto-suave); padding: 32px 20px 48px;
 .adm-form .largo { grid-column: 1 / -1; }
 .zap { margin-top: 24px; }
 #admMsg { color: var(--texto-suave); font-size: .9rem; }
+.faixa-info { background: #251a40; color: #f3eefc; font-size: .88rem; display: flex; gap: 4px 24px; flex-wrap: wrap; justify-content: center; padding: 8px 20px; text-align: center; }
+.faixa-info[hidden] { display: none; }
+.faixa-info a { color: var(--lua); }
+.busca { margin-bottom: 14px; }
+.busca input { width: 100%; font: inherit; padding: 12px 16px; border: 1px solid var(--borda); border-radius: 12px; background: var(--superficie); color: var(--texto); }
+.preco .de { color: var(--texto-suave); font-weight: 400; font-size: .88rem; margin-right: 6px; }
+.preco .por { color: var(--destaque); }
+.selo-desc { position: absolute; top: 10px; right: 10px; background: #c0392b; color: #fff; border-radius: 999px; padding: 2px 10px; font-size: .8rem; font-weight: 700; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.modal { position: fixed; inset: 0; z-index: 65; background: rgba(10,5,25,.6); display: grid; place-items: center; padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px); overflow-y: auto; }
+.modal[hidden] { display: none; }
+.modal-card { background: var(--superficie); color: var(--texto); border-radius: 20px; padding: 22px; width: min(460px, 100%); max-height: 100%; overflow-y: auto; }
+.modal-card h2 { font-size: 1.5rem; margin-bottom: 12px; }
+.co-resumo { border: 1px solid var(--borda); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: .92rem; }
+.co-resumo div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+.co-resumo .co-total { font-weight: 700; border-top: 1px solid var(--borda); margin-top: 6px; padding-top: 8px; }
+.co-campos { display: grid; gap: 12px; }
+.co-campos label { display: grid; gap: 4px; font-size: .85rem; color: var(--texto-suave); }
+.co-campos input, .co-campos textarea { font: inherit; padding: 10px; border: 1px solid var(--borda); border-radius: 10px; background: var(--fundo); color: var(--texto); }
+.co-erro { color: #c0392b; min-height: 1.2em; margin: 10px 0 0; font-size: .9rem; }
+.co-acoes { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; margin-top: 8px; }
+.ctl { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.linha .mini-num { width: 64px; padding: 4px 6px; border: 1px solid var(--borda); border-radius: 8px; background: var(--fundo); color: var(--texto); font: inherit; }
 .link-dono { color: var(--texto-suave); font-size: .85rem; }
 .titulo-sec { margin: 28px 0 8px; }
 .acoes-adm { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -171,15 +195,18 @@ label.bt { cursor: pointer; }
 </head>
 <body>
 
+<!-- ===================== FAIXA COM ENDEREÇO E CONTATO (editável no painel) ===================== -->
+<div class="faixa-info" id="faixaInfo" hidden></div>
+
 <!-- ===================== CABEÇALHO ===================== -->
 <header class="topo">
   <div class="topo-interno">
     <a class="logo" href="#inicio" aria-label="Cupcakes da Lua, início">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="#f7d774"></path></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="#f7d774"/></svg>
       Cupcakes da Lua
     </a>
     <div class="topo-acoes">
-      <button class="btn-admin" id="abrirAdmin" hidden="">Painel da loja</button>
+      <button class="btn-admin" id="abrirAdmin" hidden>Painel da loja</button>
       <button class="btn-carrinho" id="abrirCarrinho" aria-label="Abrir carrinho">
         Carrinho <span class="contador" id="contador">0</span>
       </button>
@@ -205,6 +232,7 @@ label.bt { cursor: pointer; }
   <section class="vitrine" id="vitrine">
     <h2>Vitrine</h2>
     <p class="sub">Escolha quantos quiser e adicione ao carrinho.</p>
+    <div class="busca"><input type="search" id="busca" placeholder="Buscar cupcake por nome, sabor ou categoria" aria-label="Buscar cupcakes" autocomplete="off"></div>
     <div class="filtros" id="filtros" role="group" aria-label="Filtrar por categoria"></div>
     <div class="grade" id="grade"></div>
   </section>
@@ -222,30 +250,54 @@ label.bt { cursor: pointer; }
   <div class="car-lista" id="carLista"></div>
   <div class="car-rodape">
     <div class="total"><span>Total</span><span id="carTotal">R$ 0,00</span></div>
-    <a class="btn" id="btnFinalizar" href="#" target="_blank" rel="noopener" aria-disabled="true">Finalizar pelo WhatsApp</a>
+    <button class="btn" id="btnFinalizar" disabled>Finalizar compra</button>
     <button class="remover" id="limpar">Esvaziar carrinho</button>
   </div>
 </aside>
 <div class="toast" id="toast" role="status"></div>
 
-<!-- ===================== PAINEL DO DONO (só aparece para quem pode editar a página) ===================== -->
-<section class="admin" id="admin" hidden="" aria-label="Painel da loja">
+<!-- ===================== FINALIZAÇÃO DA COMPRA ===================== -->
+<section class="modal" id="checkout" hidden role="dialog" aria-modal="true" aria-labelledby="coTitulo">
+  <div class="modal-card">
+    <h2 id="coTitulo">Finalizar compra</h2>
+    <div class="co-resumo" id="coResumo"></div>
+    <div class="co-campos">
+      <label>Seu nome<input id="cNome" autocomplete="name"></label>
+      <label>Telefone para contato (com DDD)<input id="cTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(66) 99999-9999"></label>
+      <label>Endereço de entrega<textarea id="cEnd" rows="3" autocomplete="street-address" placeholder="Rua, número, bairro e ponto de referência"></textarea></label>
+    </div>
+    <p class="co-erro" id="cErro" role="alert"></p>
+    <div class="co-acoes">
+      <button class="bt" id="coVoltar">Voltar ao carrinho</button>
+      <button class="btn" id="coEnviar">Enviar pedido pelo WhatsApp</button>
+    </div>
+    <p class="nota">O pedido abre no WhatsApp da loja para você confirmar o envio.</p>
+  </div>
+</section>
+
+<!-- ===================== PAINEL DO DONO (acesso por senha) ===================== -->
+<section class="admin" id="admin" hidden aria-label="Painel da loja">
   <div class="adm-topo">
     <h2>Painel da loja</h2>
     <div class="topo-acoes">
       <span id="admMsg" role="status"></span>
       <button class="bt" id="admFechar">Fechar</button>
       <button class="bt" id="admBaixar">Baixar site atualizado</button>
-      <button class="bt primario" id="admPublicar" disabled="">Publicar no GitHub</button>
+      <button class="bt primario" id="admPublicar" disabled>Publicar no GitHub</button>
     </div>
   </div>
   <div class="adm-corpo">
     <div class="resumo" id="admResumo"></div>
     <p class="nota">As mudanças só chegam aos clientes depois de “Publicar no GitHub” (ou de baixar o site atualizado e enviar o arquivo ao GitHub). Pedidos feitos pelo WhatsApp não baixam o estoque sozinhos: ao confirmar uma venda, use o botão − do produto.</p>
     <div class="adm-barra"><h3>Cupcakes</h3><button class="bt primario" id="admNovo">Adicionar cupcake</button></div>
-    <div class="adm-form" id="admForm" hidden=""></div>
+    <div class="adm-form" id="admForm" hidden></div>
     <div id="admLista"></div>
-    <label class="zap">WhatsApp que recebe os pedidos (país + DDD + número)<input id="admZap" inputmode="numeric"></label>
+    <h3 class="titulo-sec">Dados da loja</h3>
+    <div class="adm-form">
+      <label class="largo">Endereço da loja (aparece no topo do site)<input id="admEndereco" placeholder="Rua, número, bairro, cidade"></label>
+      <label>Telefone de contato (aparece no topo do site)<input id="admTelefone" inputmode="tel" placeholder="(66) 99999-9999"></label>
+      <label>WhatsApp que recebe os pedidos (país + DDD + número)<input id="admZap" inputmode="numeric" placeholder="5566999999999"></label>
+    </div>
 
     <h3 class="titulo-sec">Publicação no GitHub</h3>
     <p class="nota">Para o botão “Publicar no GitHub” funcionar, crie um token em GitHub → Settings → Developer settings → Fine-grained tokens, com permissão “Contents: Read and write” somente neste repositório. O token fica salvo apenas neste navegador.</p>
@@ -259,7 +311,7 @@ label.bt { cursor: pointer; }
     <h3 class="titulo-sec">Segurança e backup</h3>
     <div class="acoes-adm">
       <button class="bt" id="admBackup">Baixar backup dos dados</button>
-      <label class="bt">Importar backup<input type="file" id="admImportar" accept="application/json,.json" hidden=""></label>
+      <label class="bt">Importar backup<input type="file" id="admImportar" accept="application/json,.json" hidden></label>
       <button class="bt" id="admSenha">Trocar senha</button>
       <button class="bt perigo" id="admSair">Sair do painel</button>
     </div>
@@ -269,8 +321,8 @@ label.bt { cursor: pointer; }
 <!-- DADOS DA LOJA: o painel reescreve este bloco ao publicar. Não edite à mão. -->
 <script type="application/json" id="dados-loja">
 {
- "whatsapp": "5566999218787",
- "senhaHash": "83eea9ae988e08d2695dd63455bd1c825bc5d75a1603071e160f973ab8466fac",
+ "whatsapp": "5566999999999",
+ "senhaHash": "",
  "produtos": [
   {
    "id": "lua-cheia",
@@ -286,7 +338,8 @@ label.bt { cursor: pointer; }
    },
    "topo": "lua",
    "estoque": 12,
-   "ativo": true
+   "ativo": true,
+   "desconto": 0
   },
   {
    "id": "nebulosa",
@@ -302,7 +355,8 @@ label.bt { cursor: pointer; }
    },
    "topo": "estrela",
    "estoque": 8,
-   "ativo": true
+   "ativo": true,
+   "desconto": 15
   },
   {
    "id": "eclipse",
@@ -317,8 +371,9 @@ label.bt { cursor: pointer; }
     "fundo": "#ead9cc"
    },
    "topo": "granulado",
-   "estoque": 6,
-   "ativo": true
+   "estoque": 0,
+   "ativo": true,
+   "desconto": 0
   },
   {
    "id": "morango-lunar",
@@ -334,7 +389,8 @@ label.bt { cursor: pointer; }
    },
    "topo": "cereja",
    "estoque": 15,
-   "ativo": true
+   "ativo": true,
+   "desconto": 0
   },
   {
    "id": "limao-estrelado",
@@ -350,7 +406,8 @@ label.bt { cursor: pointer; }
    },
    "topo": "estrela",
    "estoque": 4,
-   "ativo": true
+   "ativo": true,
+   "desconto": 0
   },
   {
    "id": "caramelo-cometa",
@@ -366,25 +423,12 @@ label.bt { cursor: pointer; }
    },
    "topo": "granulado",
    "estoque": 10,
-   "ativo": true
-  },
-  {
-   "id": "lua-de-queijo-mvnc87yu",
    "ativo": true,
-   "nome": "Lua de Queijo",
-   "preco": 9.5,
-   "descricao": "Recheio especial com pedalos de queijo",
-   "categoria": "Originais",
-   "estoque": 10,
-   "topo": "lua",
-   "cores": {
-    "massa": "#f3d9a4",
-    "cobertura": "#ffb3c7",
-    "forma": "#e85d8a",
-    "fundo": "#ffe3ec"
-   }
+   "desconto": 10
   }
- ]
+ ],
+ "endereco": "Rua da Lua, 100 - Centro",
+ "telefone": "(66) 99999-9999"
 }
 </script>
 
@@ -434,6 +478,21 @@ const acharProduto = (id) => PRODUTOS.find((p) => p.id === id);
 
 // Só os produtos que o dono deixou visíveis
 const visiveis = () => PRODUTOS.filter((p) => p.ativo !== false);
+
+// Preço com desconto (campo "desconto" = porcentagem de 0 a 90). Sem desconto, é o preço normal.
+const precoFinal = (p) => {
+  const d = Math.min(90, Math.max(0, Number(p.desconto) || 0));
+  return Math.round(p.preco * (100 - d)) / 100;
+};
+const emPromocao = (p) => precoFinal(p) < p.preco;
+
+// Texto de preço para o painel: "de R$ 10,00 por R$ 8,50 (−15%)" ou só o preço normal
+const textoPreco = (p) => emPromocao(p)
+  ? `<s>${formatarMoeda(p.preco)}</s> ${formatarMoeda(precoFinal(p))} (−${Math.round(p.desconto)}%)`
+  : formatarMoeda(p.preco);
+
+// Tira acentos e maiúsculas, para a busca achar "limao" ao digitar "Limão"
+const normalizar = (t) => String(t ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 // Protege textos digitados no painel antes de colocá-los na página
 const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -530,7 +589,7 @@ function limpar() { carrinho = {}; atualizarCarrinho(); }
 // Calcula total de itens e valor total
 function totais() {
   let itens = 0, valor = 0;
-  for (const [id, qtd] of Object.entries(carrinho)) { itens += qtd; valor += qtd * acharProduto(id).preco; }
+  for (const [id, qtd] of Object.entries(carrinho)) { itens += qtd; valor += qtd * precoFinal(acharProduto(id)); }
   return { itens, valor };
 }
 
@@ -538,6 +597,7 @@ function totais() {
    E. TELA (renderização)
    ===================================================================== */
 let categoriaAtual = "Todos";
+let termoBusca = "";   // texto digitado na barra de pesquisa
 
 // Desenha os botões de filtro (categorias vêm automaticamente dos produtos)
 function renderizarFiltros() {
@@ -546,26 +606,34 @@ function renderizarFiltros() {
     `<button class="filtro" data-cat="${cat}" aria-pressed="${cat === categoriaAtual}">${cat}</button>`).join("");
 }
 
-// Desenha a vitrine (só produtos visíveis; esgotados ficam sem botão)
+// Desenha a vitrine: só produtos visíveis, filtrados pela categoria e pela busca
 function renderizarVitrine() {
-  const lista = visiveis().filter((p) => categoriaAtual === "Todos" || p.categoria === categoriaAtual);
+  const termo = normalizar(termoBusca).trim();
+  const lista = visiveis().filter((p) =>
+    (categoriaAtual === "Todos" || p.categoria === categoriaAtual) &&
+    (!termo || normalizar(`${p.nome} ${p.descricao} ${p.categoria}`).includes(termo)));
   $("grade").innerHTML = lista.length ? lista.map((p) => {
     const esgotado = p.estoque <= 0;
     const selo = esgotado ? `<span class="selo esgotado">Esgotado</span>`
       : p.estoque <= CONFIG.estoqueBaixo ? `<span class="selo">Restam ${p.estoque}</span>` : "";
+    const promo = emPromocao(p);
+    const seloDesc = promo ? `<span class="selo-desc">−${Math.round(p.desconto)}%</span>` : "";
+    const preco = promo
+      ? `<span class="preco"><s class="de">${formatarMoeda(p.preco)}</s><span class="por">${formatarMoeda(precoFinal(p))}</span></span>`
+      : `<span class="preco">${formatarMoeda(p.preco)}</span>`;
     return `
     <article class="produto ${esgotado ? "indisponivel" : ""}">
-      <div class="foto" style="--foto-fundo:${esc(p.cores.fundo)}">${selo}${desenharCupcake(p)}</div>
+      <div class="foto" style="--foto-fundo:${esc(p.cores.fundo)}">${selo}${seloDesc}${desenharCupcake(p)}</div>
       <div class="info">
         <h3>${esc(p.nome)}</h3>
         <p>${esc(p.descricao)}</p>
         <div class="rodape">
-          <span class="preco">${formatarMoeda(p.preco)}</span>
+          ${preco}
           <button class="btn-add" data-add="${p.id}" ${esgotado ? "disabled" : ""}>${esgotado ? "Indisponível" : "Adicionar"}</button>
         </div>
       </div>
     </article>`;
-  }).join("") : `<p class="car-vazio">Nenhum cupcake disponível no momento.</p>`;
+  }).join("") : `<p class="car-vazio">${termo ? `Nenhum cupcake encontrado para “${esc(termoBusca.trim())}”.` : "Nenhum cupcake disponível no momento."}</p>`;
 }
 
 // Atualiza painel do carrinho, contador do cabeçalho e link do WhatsApp
@@ -583,7 +651,7 @@ function atualizarCarrinho() {
           <div class="mini">${desenharCupcake(p)}</div>
           <div>
             <b>${esc(p.nome)}</b>
-            <small>${formatarMoeda(p.preco)} cada</small>
+            <small>${formatarMoeda(precoFinal(p))} cada</small>
             <div class="qtd">
               <button data-menos="${id}" aria-label="Diminuir quantidade">−</button>
               <span>${qtd}</span>
@@ -591,24 +659,15 @@ function atualizarCarrinho() {
             </div>
           </div>
           <div style="text-align:right">
-            <b>${formatarMoeda(p.preco * qtd)}</b><br>
+            <b>${formatarMoeda(precoFinal(p) * qtd)}</b><br>
             <button class="remover" data-remover="${id}">Remover</button>
           </div>
         </div>`;
       }).join("")
     : `<p class="car-vazio">Seu carrinho está vazio.<br>Escolha um cupcake na vitrine.</p>`;
 
-  // Monta a mensagem do pedido para o WhatsApp
-  const botao = $("btnFinalizar");
-  if (ids.length) {
-    const linhas = ids.map((id) => `• ${carrinho[id]}x ${acharProduto(id).nome}`).join("\n");
-    const msg = `Olá! Quero fazer um pedido na Cupcakes da Lua:\n${linhas}\nTotal: ${formatarMoeda(valor)}`;
-    botao.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
-    botao.setAttribute("aria-disabled", "false");
-  } else {
-    botao.href = "#";
-    botao.setAttribute("aria-disabled", "true");
-  }
+  // O botão "Finalizar compra" só funciona com itens no carrinho
+  $("btnFinalizar").disabled = !ids.length;
   salvarCarrinho();
 }
 
@@ -635,7 +694,70 @@ $("abrirCarrinho").addEventListener("click", () => abrirCarrinho(true));
 $("fecharCarrinho").addEventListener("click", () => abrirCarrinho(false));
 $("fundo").addEventListener("click", () => abrirCarrinho(false));
 $("limpar").addEventListener("click", limpar);
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") abrirCarrinho(false); });
+$("busca").addEventListener("input", (e) => { termoBusca = e.target.value; renderizarVitrine(); });
+$("btnFinalizar").addEventListener("click", abrirCheckout);
+$("coVoltar").addEventListener("click", fecharCheckout);
+$("coEnviar").addEventListener("click", enviarPedido);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { abrirCarrinho(false); fecharCheckout(); } });
+
+/* =====================================================================
+   F2. ENDEREÇO/CONTATO NO TOPO E FINALIZAÇÃO DA COMPRA
+   ===================================================================== */
+
+// Mostra endereço e telefone da loja na faixa do topo (editados no painel)
+function renderizarInfoLoja() {
+  const partes = [];
+  if (LOJA.endereco) partes.push(`<span>Endereço: ${esc(LOJA.endereco)}</span>`);
+  if (LOJA.telefone) {
+    const digitos = String(LOJA.telefone).replace(/\D/g, "");
+    partes.push(`<span>Contato: <a href="tel:${digitos}">${esc(LOJA.telefone)}</a></span>`);
+  }
+  $("faixaInfo").innerHTML = partes.join("");
+  $("faixaInfo").hidden = !partes.length;
+}
+
+// Dados do cliente ficam salvos neste navegador para não precisar digitar de novo
+const CHAVE_CLIENTE = "cupcakes-da-lua-cliente";
+
+// Abre a janela de finalização com resumo do pedido e os campos do cliente
+function abrirCheckout() {
+  const ids = Object.keys(carrinho);
+  if (!ids.length) return;
+  let c = {};
+  try { c = JSON.parse(localStorage.getItem(CHAVE_CLIENTE) || "{}"); } catch (e) { c = {}; }
+  $("cNome").value = c.nome || ""; $("cTel").value = c.tel || ""; $("cEnd").value = c.end || "";
+  $("cErro").textContent = "";
+  $("coResumo").innerHTML = ids.map((id) => {
+    const p = acharProduto(id);
+    return `<div><span>${carrinho[id]}× ${esc(p.nome)}</span><span>${formatarMoeda(precoFinal(p) * carrinho[id])}</span></div>`;
+  }).join("") + `<div class="co-total"><span>Total</span><span>${formatarMoeda(totais().valor)}</span></div>`;
+  $("checkout").hidden = false;
+  $("cNome").focus();
+}
+function fecharCheckout() { $("checkout").hidden = true; }
+
+// Confere os campos obrigatórios e abre o WhatsApp com o pedido pronto
+function enviarPedido() {
+  const nome = $("cNome").value.trim(), tel = $("cTel").value.trim(), end = $("cEnd").value.trim();
+  const digitos = tel.replace(/\D/g, "");
+  let erro = "";
+  if (nome.length < 2) erro = "Informe o seu nome.";
+  else if (digitos.length < 10 || digitos.length > 13) erro = "Informe um telefone válido, com DDD.";
+  else if (end.length < 8) erro = "Informe o endereço de entrega completo (rua, número e bairro).";
+  if (erro) { $("cErro").textContent = erro; return; }
+
+  try { localStorage.setItem(CHAVE_CLIENTE, JSON.stringify({ nome, tel, end })); } catch (e) { /* segue sem salvar */ }
+
+  const itens = Object.keys(carrinho).map((id) => {
+    const p = acharProduto(id);
+    return `• ${carrinho[id]}x ${p.nome} (${formatarMoeda(precoFinal(p))} cada)`;
+  }).join("\n");
+  const msg = `Olá! Quero fazer um pedido na Cupcakes da Lua:\n\n${itens}\n\nTotal: ${formatarMoeda(totais().valor)}\n\n` +
+              `Nome: ${nome}\nTelefone: ${tel}\nEndereço de entrega: ${end}`;
+  window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+  fecharCheckout(); abrirCarrinho(false);
+  avisar("Confirme o envio do pedido no WhatsApp");
+}
 
 /* =====================================================================
    G. INÍCIO  (roda uma vez quando a página abre)
@@ -644,6 +766,7 @@ carregarCarrinho();
 if (visiveis()[0]) $("heroCupcake").innerHTML = desenharCupcake(visiveis()[0]);
 renderizarFiltros();
 renderizarVitrine();
+renderizarInfoLoja();
 atualizarCarrinho();
 
 /* =====================================================================
@@ -722,6 +845,8 @@ function abrirAdmin() {
   sujo = false; editandoId = null;
   $("admForm").hidden = true; $("admMsg").textContent = "";
   $("admZap").value = rascunho.whatsapp;
+  $("admEndereco").value = rascunho.endereco || "";
+  $("admTelefone").value = rascunho.telefone || "";
   carregarConfigGit();
   $("admin").hidden = false;
   renderAdmin();
@@ -739,7 +864,8 @@ function renderAdmin() {
     `<div><b>${ps.length}</b>cupcakes cadastrados</div>` +
     `<div><b>${ps.reduce((t, p) => t + p.estoque, 0)}</b>unidades em estoque</div>` +
     `<div><b>${ps.filter((p) => p.estoque <= 0).length}</b>esgotados</div>` +
-    `<div><b>${ps.filter((p) => p.estoque > 0 && p.estoque <= baixo).length}</b>com estoque baixo</div>`;
+    `<div><b>${ps.filter((p) => p.estoque > 0 && p.estoque <= baixo).length}</b>com estoque baixo</div>` +
+    `<div><b>${ps.filter(emPromocao).length}</b>em promoção</div>`;
 
   $("admLista").innerHTML = ps.length ? ps.map((p) => {
     const oculto = p.ativo === false;
@@ -749,14 +875,15 @@ function renderAdmin() {
       : `<span class="tag">Disponível</span>`;
     return `<div class="linha">
       <div class="mini">${desenharCupcake(p)}</div>
-      <div><b>${esc(p.nome)}</b><small>${esc(p.categoria)} · ${formatarMoeda(p.preco)}</small>${status}</div>
+      <div><b>${esc(p.nome)}</b><small>${esc(p.categoria)} · ${textoPreco(p)}</small>${status}</div>
       <div class="qtd">
         <button data-est-menos="${p.id}" aria-label="Diminuir estoque">−</button>
         <input type="number" min="0" value="${p.estoque}" data-est-input="${p.id}" aria-label="Estoque de ${esc(p.nome)}">
         <button data-est-mais="${p.id}" aria-label="Aumentar estoque">+</button>
       </div>
       <div class="extra">
-        <label><input type="checkbox" data-vis="${p.id}" ${oculto ? "" : "checked"}> Visível na vitrine</label>
+        <span class="ctl"><label><input type="checkbox" data-vis="${p.id}" ${oculto ? "" : "checked"}> Visível na vitrine</label>
+          <label>Desconto <input type="number" min="0" max="90" step="1" class="mini-num" value="${Number(p.desconto) || 0}" data-desc-input="${p.id}" aria-label="Desconto de ${esc(p.nome)} em porcentagem"> %</label></span>
         <span><button class="bt" data-editar="${p.id}">Editar</button> <button class="bt perigo" data-excluir="${p.id}">Excluir</button></span>
       </div>
     </div>`;
@@ -787,6 +914,7 @@ function abrirForm(id) {
     <label>Categoria<input id="fCat" list="listaCats" value="${esc(p.categoria)}"></label>
     <datalist id="listaCats">${cats.map((c) => `<option value="${esc(c)}">`).join("")}</datalist>
     <label>Estoque<input id="fEst" type="number" min="0" value="${p.estoque}"></label>
+    <label>Desconto (%)<input id="fPct" type="number" min="0" max="90" value="${Number(p.desconto) || 0}"></label>
     <label class="largo">Descrição<input id="fDesc" value="${esc(p.descricao)}"></label>
     <label>Enfeite<select id="fTopo">${opTopo}</select></label>
     <label>Cor da massa<input id="fMassa" type="color" value="${p.cores.massa}"></label>
@@ -814,6 +942,7 @@ function salvarForm() {
     nome, preco, descricao: $("fDesc").value.trim(),
     categoria: $("fCat").value.trim() || "Outros",
     estoque: Math.max(0, Math.floor(Number($("fEst").value) || 0)),
+    desconto: Math.min(90, Math.max(0, Math.floor(Number($("fPct").value) || 0))),
     topo: $("fTopo").value,
     cores: { massa: $("fMassa").value, cobertura: $("fCob").value, forma: $("fForma").value, fundo: $("fFundo").value }
   };
@@ -834,6 +963,8 @@ function gerarHtml() {
 function aplicarPublicado(html) {
   HTML_ORIGINAL = html;
   LOJA.whatsapp = rascunho.whatsapp;
+  LOJA.endereco = rascunho.endereco; LOJA.telefone = rascunho.telefone;
+  renderizarInfoLoja();
   LOJA.senhaHash = rascunho.senhaHash;
   LOJA.produtos = JSON.parse(JSON.stringify(rascunho.produtos));
   PRODUTOS = LOJA.produtos;
@@ -920,7 +1051,7 @@ async function publicar() {
 
 // ---------- Backup ----------
 function baixarBackup() {
-  baixarArquivo("backup-cupcakes-da-lua.json", JSON.stringify({ whatsapp: rascunho.whatsapp, produtos: rascunho.produtos }, null, 1), "application/json");
+  baixarArquivo("backup-cupcakes-da-lua.json", JSON.stringify({ whatsapp: rascunho.whatsapp, endereco: rascunho.endereco, telefone: rascunho.telefone, produtos: rascunho.produtos }, null, 1), "application/json");
 }
 function importarBackup(arquivo) {
   const leitor = new FileReader();
@@ -929,6 +1060,8 @@ function importarBackup(arquivo) {
       const d = JSON.parse(leitor.result);
       if (!Array.isArray(d.produtos)) throw new Error("formato");
       rascunho.produtos = d.produtos;
+      if (d.endereco) { rascunho.endereco = String(d.endereco); $("admEndereco").value = rascunho.endereco; }
+      if (d.telefone) { rascunho.telefone = String(d.telefone); $("admTelefone").value = rascunho.telefone; }
       if (d.whatsapp) rascunho.whatsapp = String(d.whatsapp).replace(/\D/g, "");
       $("admZap").value = rascunho.whatsapp;
       marcar();
@@ -956,9 +1089,14 @@ $("admin").addEventListener("click", (e) => {
 $("admin").addEventListener("change", (e) => {
   const t = e.target;
   if (t.dataset.estInput) definirEstoque(t.dataset.estInput, t.value);
+  else if (t.dataset.descInput) { achaRascunho(t.dataset.descInput).desconto = Math.min(90, Math.max(0, Math.floor(Number(t.value) || 0))); marcar(); }
   else if (t.dataset.vis) { achaRascunho(t.dataset.vis).ativo = t.checked; marcar(); }
+  else if (t.id === "admEndereco") { rascunho.endereco = t.value.trim(); marcar(); }
+  else if (t.id === "admTelefone") { rascunho.telefone = t.value.trim(); marcar(); }
   else if (t.id === "admZap") { rascunho.whatsapp = t.value.replace(/\D/g, ""); marcar(); }
 });
 
 iniciarAdmin();
-</script></body></html>
+</script>
+</body>
+</html>
