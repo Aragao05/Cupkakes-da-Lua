@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cupcakes da Lua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   1. CORES E FONTES  (para mudar o visual, altere só as variáveis abaixo)
+   ===================================================================== */
+:root {
+  color-scheme: light;
+  --fundo: #f6f1fb;        /* fundo da página */
+  --superficie: #ffffff;   /* cartões e painéis */
+  --texto: #251a40;        /* texto principal */
+  --texto-suave: #6a5f84;  /* texto secundário */
+  --destaque: #5b3fd0;     /* botões e links */
+  --destaque-texto: #ffffff;
+  --lua: #f7d774;          /* amarelo da lua */
+  --borda: #e2d9f2;
+  --fonte-titulo: "Fraunces", Georgia, serif;
+  --fonte-texto: "DM Sans", system-ui, sans-serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --fundo: #130d27; --superficie: #1e1639; --texto: #f3eefc;
+    --texto-suave: #b4a8d2; --destaque: #a48cff; --destaque-texto: #130d27;
+    --borda: #35295c;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fundo: #130d27; --superficie: #1e1639; --texto: #f3eefc;
+  --texto-suave: #b4a8d2; --destaque: #a48cff; --destaque-texto: #130d27;
+  --borda: #35295c;
+}
+html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 70px); scroll-behavior: smooth; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font-family: var(--fonte-texto); line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--fundo); z-index: 30; }
+h1, h2, h3 { font-family: var(--fonte-titulo); line-height: 1.1; margin: 0; }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--destaque); outline-offset: 2px; }
+
+/* =====================================================================
+   2. CABEÇALHO
+   ===================================================================== */
+header.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--fundo); border-bottom: 1px solid var(--borda); }
+.topo-interno { max-width: 1080px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.logo { font-family: var(--fonte-titulo); font-weight: 800; font-size: 1.3rem; display: flex; align-items: center; gap: 8px; color: var(--texto); text-decoration: none; }
+.logo svg { width: 26px; height: 26px; }
+.btn-carrinho { background: var(--destaque); color: var(--destaque-texto); border: 0; border-radius: 999px; padding: 10px 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.contador { background: var(--lua); color: #251a40; border-radius: 999px; min-width: 24px; height: 24px; display: grid; place-items: center; font-size: .85rem; padding: 0 6px; }
+
+/* =====================================================================
+   3. HERO (primeira dobra)
+   ===================================================================== */
+.hero { max-width: 1080px; margin: 0 auto; padding: 48px 20px 24px; display: grid; gap: 24px; grid-template-columns: 1.2fr 1fr; align-items: center; }
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.8rem); font-weight: 800; }
+.hero p { color: var(--texto-suave); font-size: 1.1rem; max-width: 46ch; margin: 16px 0 24px; }
+.hero-arte { background: #251a40; border-radius: 28px; aspect-ratio: 1; display: grid; place-items: center; position: relative; overflow: hidden; }
+.hero-arte .lua { position: absolute; top: 12%; right: 14%; width: 22%; aspect-ratio: 1; border-radius: 50%; background: var(--lua); box-shadow: 0 0 60px 10px rgba(247,215,116,.45); }
+.hero-arte svg { width: 62%; position: relative; }
+.btn { display: inline-block; background: var(--destaque); color: var(--destaque-texto); border: 0; border-radius: 12px; padding: 12px 22px; font-weight: 700; text-decoration: none; }
+.btn.secundario { background: transparent; color: var(--destaque); border: 2px solid var(--destaque); }
+
+/* =====================================================================
+   4. VITRINE DE PRODUTOS
+   ===================================================================== */
+section.vitrine { max-width: 1080px; margin: 0 auto; padding: 32px 20px 56px; }
+.vitrine h2 { font-size: 2rem; }
+.vitrine .sub { color: var(--texto-suave); margin: 6px 0 20px; }
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.filtro { background: var(--superficie); color: var(--texto); border: 1px solid var(--borda); border-radius: 999px; padding: 8px 16px; }
+.filtro[aria-pressed="true"] { background: var(--destaque); color: var(--destaque-texto); border-color: var(--destaque); }
+.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+.produto { background: var(--superficie); border: 1px solid var(--borda); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
+.produto .foto { background: var(--foto-fundo, #f0e8fb); display: grid; place-items: center; padding: 18px; }
+.produto .foto svg { width: 120px; height: 120px; }
+.produto .info { padding: 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.produto h3 { font-size: 1.2rem; }
+.produto p { margin: 0; color: var(--texto-suave); font-size: .92rem; flex: 1; }
+.produto .rodape { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.preco { font-weight: 700; font-size: 1.1rem; }
+.btn-add { background: var(--destaque); color: var(--destaque-texto); border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 700; }
+
+/* =====================================================================
+   5. CARRINHO (painel lateral)
+   ===================================================================== */
+.fundo-escuro { position: fixed; inset: 0; background: rgba(10,5,25,.55); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
+.fundo-escuro.aberto { opacity: 1; pointer-events: auto; }
+aside.carrinho { position: fixed; top: 0; right: 0; bottom: 0; width: min(400px, 100%); background: var(--superficie); z-index: 50; transform: translateX(100%); transition: transform .25s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+aside.carrinho.aberto { transform: none; }
+.car-topo { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--borda); }
+.car-topo h2 { font-size: 1.4rem; }
+.fechar { background: none; border: 0; font-size: 1.8rem; color: var(--texto); line-height: 1; }
+.car-lista { flex: 1; overflow-y: auto; padding: 8px 20px; }
+.car-vazio { color: var(--texto-suave); text-align: center; padding: 48px 0; }
+.item { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--borda); }
+.item .mini { width: 56px; height: 56px; background: #f0e8fb; border-radius: 12px; display: grid; place-items: center; }
+.item .mini svg { width: 40px; height: 40px; }
+.item b { display: block; }
+.item small { color: var(--texto-suave); }
+.qtd { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.qtd button { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--borda); background: var(--fundo); color: var(--texto); }
+.remover { background: none; border: 0; color: var(--texto-suave); text-decoration: underline; font-size: .8rem; }
+.car-rodape { padding: 18px 20px; border-top: 1px solid var(--borda); display: grid; gap: 12px; }
+.total { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; }
+.car-rodape .btn { text-align: center; }
+.car-rodape .btn[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+
+/* Aviso rápido (toast) */
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); transform: translate(-50%, 20px); background: var(--texto); color: var(--fundo); padding: 10px 18px; border-radius: 999px; opacity: 0; transition: .25s; z-index: 60; pointer-events: none; }
+.toast.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+footer { text-align: center; color: var(--texto-suave); padding: 32px 20px 48px; border-top: 1px solid var(--borda); }
+
+/* =====================================================================
+   6. ESTOQUE NA VITRINE E PAINEL DO DONO
+   ===================================================================== */
+.topo-acoes { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btn-admin { background: transparent; color: var(--destaque); border: 2px solid var(--destaque); border-radius: 999px; padding: 8px 14px; font-weight: 700; }
+.btn-admin[hidden] { display: none; }
+.produto .foto { position: relative; }
+.selo { position: absolute; top: 10px; left: 10px; background: var(--lua); color: #251a40; border-radius: 999px; padding: 2px 10px; font-size: .8rem; font-weight: 700; }
+.selo.esgotado { background: #251a40; color: #fff; }
+.indisponivel .foto svg { opacity: .4; filter: grayscale(1); }
+.btn-add:disabled { opacity: .45; cursor: not-allowed; }
+.admin { position: fixed; inset: 0; z-index: 70; background: var(--fundo); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.admin[hidden] { display: none; }
+.adm-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--borda); flex-wrap: wrap; }
+.adm-corpo { flex: 1; overflow-y: auto; padding: 20px; width: 100%; max-width: 900px; margin: 0 auto; }
+.resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.resumo div { background: var(--superficie); border: 1px solid var(--borda); border-radius: 14px; padding: 12px; color: var(--texto-suave); font-size: .85rem; }
+.resumo b { display: block; font-size: 1.7rem; font-family: var(--fonte-titulo); color: var(--texto); }
+.nota { color: var(--texto-suave); font-size: .9rem; }
+.adm-barra { display: flex; justify-content: space-between; align-items: center; margin: 20px 0 12px; }
+.linha { display: grid; grid-template-columns: 48px 1fr auto; gap: 10px 14px; align-items: center; background: var(--superficie); border: 1px solid var(--borda); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
+.linha .mini { width: 48px; height: 48px; background: #f0e8fb; border-radius: 10px; display: grid; place-items: center; }
+.linha .mini svg { width: 36px; height: 36px; }
+.linha small { display: block; color: var(--texto-suave); }
+.linha .extra { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.qtd input { width: 56px; height: 28px; text-align: center; border: 1px solid var(--borda); border-radius: 8px; background: var(--fundo); color: var(--texto); font: inherit; }
+.tag { font-size: .78rem; padding: 2px 8px; border-radius: 999px; background: var(--borda); color: var(--texto); }
+.tag.ruim { background: #f4c7c7; color: #5c1212; }
+.tag.alerta { background: var(--lua); color: #251a40; }
+.bt { background: var(--superficie); color: var(--texto); border: 1px solid var(--borda); border-radius: 8px; padding: 7px 12px; }
+.bt.primario { background: var(--destaque); color: var(--destaque-texto); border-color: var(--destaque); font-weight: 700; }
+.bt.perigo { color: #c0392b; border-color: #c0392b; }
+.bt:disabled { opacity: .45; cursor: not-allowed; }
+.adm-form { background: var(--superficie); border: 1px solid var(--borda); border-radius: 16px; padding: 16px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.adm-form[hidden] { display: none; }
+.adm-form label, .zap { display: grid; gap: 4px; font-size: .85rem; color: var(--texto-suave); }
+.adm-form input, .adm-form select, .zap input { font: inherit; padding: 8px; border: 1px solid var(--borda); border-radius: 8px; background: var(--fundo); color: var(--texto); }
+.adm-form input[type="color"] { height: 38px; padding: 2px; }
+.adm-form .largo { grid-column: 1 / -1; }
+.zap { margin-top: 24px; }
+#admMsg { color: var(--texto-suave); font-size: .9rem; }
+.link-dono { color: var(--texto-suave); font-size: .85rem; }
+.titulo-sec { margin: 28px 0 8px; }
+.acoes-adm { display: flex; gap: 8px; flex-wrap: wrap; }
+label.bt { cursor: pointer; }
+@media (max-width: 720px) { .hero { grid-template-columns: 1fr; } .hero-arte { aspect-ratio: 4/3; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+
+<!-- ===================== CABEÇALHO ===================== -->
+<header class="topo">
+  <div class="topo-interno">
+    <a class="logo" href="#inicio" aria-label="Cupcakes da Lua, início">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="#f7d774"/></svg>
+      Cupcakes da Lua
+    </a>
+    <div class="topo-acoes">
+      <button class="btn-admin" id="abrirAdmin" hidden>Painel da loja</button>
+      <button class="btn-carrinho" id="abrirCarrinho" aria-label="Abrir carrinho">
+        Carrinho <span class="contador" id="contador">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="inicio">
+  <!-- ===================== HERO ===================== -->
+  <section class="hero">
+    <div>
+      <h1>Cupcakes feitos sob a luz da lua</h1>
+      <p>Massa fofinha, cobertura cremosa e sabores para todas as fases. Monte seu pedido e receba fresquinho.</p>
+      <a class="btn" href="#vitrine">Ver a vitrine</a>
+    </div>
+    <div class="hero-arte" aria-hidden="true">
+      <div class="lua"></div>
+      <div id="heroCupcake"></div>
+    </div>
+  </section>
+
+  <!-- ===================== VITRINE ===================== -->
+  <section class="vitrine" id="vitrine">
+    <h2>Vitrine</h2>
+    <p class="sub">Escolha quantos quiser e adicione ao carrinho.</p>
+    <div class="filtros" id="filtros" role="group" aria-label="Filtrar por categoria"></div>
+    <div class="grade" id="grade"></div>
+  </section>
+</main>
+
+<footer>Cupcakes da Lua · feito à mão, todos os dias<br><a href="#admin" id="linkAdmin" class="link-dono">Área do dono</a></footer>
+
+<!-- ===================== CARRINHO ===================== -->
+<div class="fundo-escuro" id="fundo"></div>
+<aside class="carrinho" id="carrinho" aria-label="Carrinho de compras" aria-hidden="true">
+  <div class="car-topo">
+    <h2>Seu carrinho</h2>
+    <button class="fechar" id="fecharCarrinho" aria-label="Fechar carrinho">×</button>
+  </div>
+  <div class="car-lista" id="carLista"></div>
+  <div class="car-rodape">
+    <div class="total"><span>Total</span><span id="carTotal">R$ 0,00</span></div>
+    <a class="btn" id="btnFinalizar" href="#" target="_blank" rel="noopener" aria-disabled="true">Finalizar pelo WhatsApp</a>
+    <button class="remover" id="limpar">Esvaziar carrinho</button>
+  </div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
+
+<!-- ===================== PAINEL DO DONO (só aparece para quem pode editar a página) ===================== -->
+<section class="admin" id="admin" hidden aria-label="Painel da loja">
+  <div class="adm-topo">
+    <h2>Painel da loja</h2>
+    <div class="topo-acoes">
+      <span id="admMsg" role="status"></span>
+      <button class="bt" id="admFechar">Fechar</button>
+      <button class="bt" id="admBaixar">Baixar site atualizado</button>
+      <button class="bt primario" id="admPublicar" disabled>Publicar no GitHub</button>
+    </div>
+  </div>
+  <div class="adm-corpo">
+    <div class="resumo" id="admResumo"></div>
+    <p class="nota">As mudanças só chegam aos clientes depois de “Publicar no GitHub” (ou de baixar o site atualizado e enviar o arquivo ao GitHub). Pedidos feitos pelo WhatsApp não baixam o estoque sozinhos: ao confirmar uma venda, use o botão − do produto.</p>
+    <div class="adm-barra"><h3>Cupcakes</h3><button class="bt primario" id="admNovo">Adicionar cupcake</button></div>
+    <div class="adm-form" id="admForm" hidden></div>
+    <div id="admLista"></div>
+    <label class="zap">WhatsApp que recebe os pedidos (país + DDD + número)<input id="admZap" inputmode="numeric"></label>
+
+    <h3 class="titulo-sec">Publicação no GitHub</h3>
+    <p class="nota">Para o botão “Publicar no GitHub” funcionar, crie um token em GitHub → Settings → Developer settings → Fine-grained tokens, com permissão “Contents: Read and write” somente neste repositório. O token fica salvo apenas neste navegador.</p>
+    <div class="adm-form" id="admGit">
+      <label>Repositório (usuário/repositório)<input id="gitRepo" placeholder="maria/cupcakes-da-lua"></label>
+      <label>Branch<input id="gitBranch"></label>
+      <label>Arquivo do site<input id="gitCaminho"></label>
+      <label>Token<input id="gitToken" type="password" autocomplete="off"></label>
+    </div>
+
+    <h3 class="titulo-sec">Segurança e backup</h3>
+    <div class="acoes-adm">
+      <button class="bt" id="admBackup">Baixar backup dos dados</button>
+      <label class="bt">Importar backup<input type="file" id="admImportar" accept="application/json,.json" hidden></label>
+      <button class="bt" id="admSenha">Trocar senha</button>
+      <button class="bt perigo" id="admSair">Sair do painel</button>
+    </div>
+  </div>
+</section>
+
+<!-- DADOS DA LOJA: o painel reescreve este bloco ao publicar. Não edite à mão. -->
+<script type="application/json" id="dados-loja">
+{
+ "whatsapp": "5566999999999",
+ "senhaHash": "",
+ "produtos": [
+  {
+   "id": "lua-cheia",
+   "nome": "Lua Cheia",
+   "descricao": "Baunilha com creme de leite ninho e lua de chocolate branco.",
+   "preco": 9.5,
+   "categoria": "Clássicos",
+   "cores": {
+    "massa": "#f3d9a4",
+    "cobertura": "#fff8e6",
+    "forma": "#e9c46a",
+    "fundo": "#fdf3d2"
+   },
+   "topo": "lua",
+   "estoque": 12,
+   "ativo": true
+  },
+  {
+   "id": "nebulosa",
+   "nome": "Nebulosa",
+   "descricao": "Chocolate intenso com cobertura de frutas roxas.",
+   "preco": 10.5,
+   "categoria": "Chocolate",
+   "cores": {
+    "massa": "#5a3a2a",
+    "cobertura": "#9b7fe6",
+    "forma": "#6c4fc9",
+    "fundo": "#e6dcfb"
+   },
+   "topo": "estrela",
+   "estoque": 8,
+   "ativo": true
+  },
+  {
+   "id": "eclipse",
+   "nome": "Eclipse",
+   "descricao": "Massa de cacau com ganache e brigadeiro cremoso.",
+   "preco": 11,
+   "categoria": "Chocolate",
+   "cores": {
+    "massa": "#3b2418",
+    "cobertura": "#2a1810",
+    "forma": "#8a5a3c",
+    "fundo": "#ead9cc"
+   },
+   "topo": "granulado",
+   "estoque": 0,
+   "ativo": true
+  },
+  {
+   "id": "morango-lunar",
+   "nome": "Morango Lunar",
+   "descricao": "Massa de baunilha, chantilly de morango e cereja.",
+   "preco": 10,
+   "categoria": "Frutas",
+   "cores": {
+    "massa": "#f6dfb5",
+    "cobertura": "#ffb3c7",
+    "forma": "#e85d8a",
+    "fundo": "#ffe3ec"
+   },
+   "topo": "cereja",
+   "estoque": 15,
+   "ativo": true
+  },
+  {
+   "id": "limao-estrelado",
+   "nome": "Limão Estrelado",
+   "descricao": "Massa de limão siciliano com merengue tostado.",
+   "preco": 9.5,
+   "categoria": "Frutas",
+   "cores": {
+    "massa": "#f7e68a",
+    "cobertura": "#fffbe0",
+    "forma": "#c9b81f",
+    "fundo": "#fbf6c8"
+   },
+   "topo": "estrela",
+   "estoque": 4,
+   "ativo": true
+  },
+  {
+   "id": "caramelo-cometa",
+   "nome": "Caramelo Cometa",
+   "descricao": "Recheio de doce de leite e cobertura de caramelo.",
+   "preco": 11.5,
+   "categoria": "Clássicos",
+   "cores": {
+    "massa": "#e2b074",
+    "cobertura": "#d98e3f",
+    "forma": "#a8651f",
+    "fundo": "#f8e4c9"
+   },
+   "topo": "granulado",
+   "estoque": 10,
+   "ativo": true
+  }
+ ]
+}
+</script>
+
+<script>
+/* =====================================================================
+   A. CONFIGURAÇÕES DA LOJA  (edite aqui dados gerais)
+   ===================================================================== */
+// Cópia limpa da página, guardada ANTES de qualquer desenho na tela.
+// O painel usa essa cópia para publicar uma nova versão com o estoque atualizado.
+let HTML_ORIGINAL = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+// Dados da loja (produtos, estoque e WhatsApp) lidos do bloco JSON no fim do HTML.
+const LOJA = JSON.parse(document.getElementById("dados-loja").textContent);
+
+const CONFIG = {
+  // Número que recebe os pedidos (formato: código do país + DDD + número, só dígitos)
+  whatsapp: LOJA.whatsapp,
+  // Chave usada para salvar o carrinho no navegador
+  chaveCarrinho: "cupcakes-da-lua-carrinho",
+  // Com este estoque (ou menos) aparece “Restam X” na vitrine e o alerta no painel
+  estoqueBaixo: 5
+};
+
+/* =====================================================================
+   B. PRODUTOS  (vêm do bloco "dados-loja" no HTML)
+   Você não edita esta lista no código: use o botão "Painel da loja"
+   (aparece só para o dono) para adicionar, editar, excluir, ocultar
+   e controlar o estoque. Cada produto tem:
+     id, nome, descricao, preco, categoria, topo, cores
+     estoque → quantas unidades existem (0 = "Esgotado" na vitrine)
+     ativo   → false esconde o cupcake da vitrine
+   ===================================================================== */
+let PRODUTOS = LOJA.produtos;
+
+/* =====================================================================
+   C. FUNÇÕES AUXILIARES
+   ===================================================================== */
+
+// Formata número como moeda brasileira: 9.5 → "R$ 9,50"
+const formatarMoeda = (valor) => valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+// Busca atalho de elemento por id
+const $ = (id) => document.getElementById(id);
+
+// Encontra um produto pelo id
+const acharProduto = (id) => PRODUTOS.find((p) => p.id === id);
+
+// Só os produtos que o dono deixou visíveis
+const visiveis = () => PRODUTOS.filter((p) => p.ativo !== false);
+
+// Protege textos digitados no painel antes de colocá-los na página
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* Gera o desenho SVG de um cupcake a partir das cores e do enfeite do produto.
+   Para mudar o formato do desenho, edite este bloco. */
+function desenharCupcake(produto) {
+  const c = produto.cores;
+  let enfeite = "";
+  if (produto.topo === "cereja")
+    enfeite = `<circle cx="60" cy="22" r="8" fill="#c1121f"/><path d="M60 14q4-8 10-8" stroke="#2d6a4f" stroke-width="2" fill="none"/>`;
+  else if (produto.topo === "estrela")
+    enfeite = `<path d="M60 12l3.5 7.5 8 1-6 5.5 1.7 8L60 30l-7.2 4 1.7-8-6-5.5 8-1z" fill="#f7d774"/>`;
+  else if (produto.topo === "lua")
+    enfeite = `<path d="M68 16a12 12 0 1 1-14 0 9 9 0 1 0 14 0z" fill="#f7d774"/>`;
+  else
+    enfeite = [[46,34],[58,26],[70,34],[52,42],[66,44]].map(([x,y],i) =>
+      `<rect x="${x}" y="${y}" width="9" height="3" rx="1.5" fill="${["#ff6b9d","#f7d774","#7bdff2"][i%3]}" transform="rotate(${i*35} ${x} ${y})"/>`).join("");
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="Cupcake ${produto.nome}">
+    <path d="M26 66h68l-9 42a6 6 0 0 1-6 5H41a6 6 0 0 1-6-5z" fill="${c.forma}"/>
+    <path d="M44 70l4 40M60 70v40M76 70l-4 40" stroke="rgba(0,0,0,.12)" stroke-width="2"/>
+    <ellipse cx="60" cy="66" rx="38" ry="14" fill="${c.massa}"/>
+    <path d="M28 62c0-14 14-22 32-22s32 8 32 22c0 6-14 10-32 10S28 68 28 62z" fill="${c.cobertura}"/>
+    <path d="M40 48c4-12 14-16 20-16s16 4 20 16c-6 4-14 5-20 5s-14-1-20-5z" fill="${c.cobertura}" stroke="rgba(0,0,0,.1)" stroke-width="1.5"/>
+    ${enfeite}
+  </svg>`;
+}
+
+/* Aviso rápido que aparece e some sozinho */
+let temporizadorToast;
+function avisar(mensagem) {
+  const t = $("toast");
+  t.textContent = mensagem;
+  t.classList.add("visivel");
+  clearTimeout(temporizadorToast);
+  temporizadorToast = setTimeout(() => t.classList.remove("visivel"), 1800);
+}
+
+/* =====================================================================
+   D. ESTADO DO CARRINHO
+   O carrinho é um objeto simples: { "id-do-produto": quantidade }
+   Ex.: { "lua-cheia": 2, "nebulosa": 1 }
+   ===================================================================== */
+let carrinho = {};
+
+// Carrega o carrinho salvo no navegador (se existir)
+function carregarCarrinho() {
+  try {
+    const salvo = localStorage.getItem(CONFIG.chaveCarrinho);
+    if (salvo) carrinho = JSON.parse(salvo) || {};
+  } catch (e) { carrinho = {}; }
+  // Remove itens de produtos que não existem mais na lista
+  // Remove itens que sumiram, foram ocultados ou esgotaram; limita ao estoque atual
+  Object.keys(carrinho).forEach((id) => {
+    const p = acharProduto(id);
+    if (!p || p.ativo === false || p.estoque <= 0) delete carrinho[id];
+    else carrinho[id] = Math.min(carrinho[id], p.estoque);
+  });
+}
+
+// Salva o carrinho no navegador
+function salvarCarrinho() {
+  try { localStorage.setItem(CONFIG.chaveCarrinho, JSON.stringify(carrinho)); } catch (e) { /* sem armazenamento: segue sem salvar */ }
+}
+
+// Ainda há estoque para mais uma unidade deste produto?
+function temEstoque(id) {
+  const p = acharProduto(id);
+  return !!p && p.ativo !== false && (carrinho[id] || 0) < p.estoque;
+}
+
+// Adiciona uma unidade de um produto (respeitando o estoque)
+function adicionar(id) {
+  if (!temEstoque(id)) { avisar("Não há mais unidades em estoque"); return; }
+  carrinho[id] = (carrinho[id] || 0) + 1;
+  atualizarCarrinho();
+  avisar(`${acharProduto(id).nome} adicionado`);
+}
+
+// Soma (+1) ou subtrai (−1) a quantidade; se chegar a 0, remove o item
+function alterarQuantidade(id, delta) {
+  if (delta > 0 && !temEstoque(id)) { avisar("Limite do estoque atingido"); return; }
+  carrinho[id] = (carrinho[id] || 0) + delta;
+  if (carrinho[id] <= 0) delete carrinho[id];
+  atualizarCarrinho();
+}
+
+// Remove o item inteiro
+function remover(id) { delete carrinho[id]; atualizarCarrinho(); }
+
+// Esvazia tudo
+function limpar() { carrinho = {}; atualizarCarrinho(); }
+
+// Calcula total de itens e valor total
+function totais() {
+  let itens = 0, valor = 0;
+  for (const [id, qtd] of Object.entries(carrinho)) { itens += qtd; valor += qtd * acharProduto(id).preco; }
+  return { itens, valor };
+}
+
+/* =====================================================================
+   E. TELA (renderização)
+   ===================================================================== */
+let categoriaAtual = "Todos";
+
+// Desenha os botões de filtro (categorias vêm automaticamente dos produtos)
+function renderizarFiltros() {
+  const categorias = ["Todos", ...new Set(visiveis().map((p) => p.categoria))];
+  $("filtros").innerHTML = categorias.map((cat) =>
+    `<button class="filtro" data-cat="${cat}" aria-pressed="${cat === categoriaAtual}">${cat}</button>`).join("");
+}
+
+// Desenha a vitrine (só produtos visíveis; esgotados ficam sem botão)
+function renderizarVitrine() {
+  const lista = visiveis().filter((p) => categoriaAtual === "Todos" || p.categoria === categoriaAtual);
+  $("grade").innerHTML = lista.length ? lista.map((p) => {
+    const esgotado = p.estoque <= 0;
+    const selo = esgotado ? `<span class="selo esgotado">Esgotado</span>`
+      : p.estoque <= CONFIG.estoqueBaixo ? `<span class="selo">Restam ${p.estoque}</span>` : "";
+    return `
+    <article class="produto ${esgotado ? "indisponivel" : ""}">
+      <div class="foto" style="--foto-fundo:${esc(p.cores.fundo)}">${selo}${desenharCupcake(p)}</div>
+      <div class="info">
+        <h3>${esc(p.nome)}</h3>
+        <p>${esc(p.descricao)}</p>
+        <div class="rodape">
+          <span class="preco">${formatarMoeda(p.preco)}</span>
+          <button class="btn-add" data-add="${p.id}" ${esgotado ? "disabled" : ""}>${esgotado ? "Indisponível" : "Adicionar"}</button>
+        </div>
+      </div>
+    </article>`;
+  }).join("") : `<p class="car-vazio">Nenhum cupcake disponível no momento.</p>`;
+}
+
+// Atualiza painel do carrinho, contador do cabeçalho e link do WhatsApp
+function atualizarCarrinho() {
+  const ids = Object.keys(carrinho);
+  const { itens, valor } = totais();
+
+  $("contador").textContent = itens;
+  $("carTotal").textContent = formatarMoeda(valor);
+
+  $("carLista").innerHTML = ids.length
+    ? ids.map((id) => {
+        const p = acharProduto(id), qtd = carrinho[id];
+        return `<div class="item">
+          <div class="mini">${desenharCupcake(p)}</div>
+          <div>
+            <b>${esc(p.nome)}</b>
+            <small>${formatarMoeda(p.preco)} cada</small>
+            <div class="qtd">
+              <button data-menos="${id}" aria-label="Diminuir quantidade">−</button>
+              <span>${qtd}</span>
+              <button data-mais="${id}" aria-label="Aumentar quantidade">+</button>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <b>${formatarMoeda(p.preco * qtd)}</b><br>
+            <button class="remover" data-remover="${id}">Remover</button>
+          </div>
+        </div>`;
+      }).join("")
+    : `<p class="car-vazio">Seu carrinho está vazio.<br>Escolha um cupcake na vitrine.</p>`;
+
+  // Monta a mensagem do pedido para o WhatsApp
+  const botao = $("btnFinalizar");
+  if (ids.length) {
+    const linhas = ids.map((id) => `• ${carrinho[id]}x ${acharProduto(id).nome}`).join("\n");
+    const msg = `Olá! Quero fazer um pedido na Cupcakes da Lua:\n${linhas}\nTotal: ${formatarMoeda(valor)}`;
+    botao.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+    botao.setAttribute("aria-disabled", "false");
+  } else {
+    botao.href = "#";
+    botao.setAttribute("aria-disabled", "true");
+  }
+  salvarCarrinho();
+}
+
+// Abre e fecha o painel do carrinho
+function abrirCarrinho(abrir) {
+  $("carrinho").classList.toggle("aberto", abrir);
+  $("fundo").classList.toggle("aberto", abrir);
+  $("carrinho").setAttribute("aria-hidden", String(!abrir));
+}
+
+/* =====================================================================
+   F. EVENTOS (cliques)
+   ===================================================================== */
+document.addEventListener("click", (e) => {
+  const alvo = e.target.closest("button");
+  if (!alvo) return;
+  if (alvo.dataset.add) adicionar(alvo.dataset.add);
+  else if (alvo.dataset.mais) alterarQuantidade(alvo.dataset.mais, +1);
+  else if (alvo.dataset.menos) alterarQuantidade(alvo.dataset.menos, -1);
+  else if (alvo.dataset.remover) remover(alvo.dataset.remover);
+  else if (alvo.dataset.cat) { categoriaAtual = alvo.dataset.cat; renderizarFiltros(); renderizarVitrine(); }
+});
+$("abrirCarrinho").addEventListener("click", () => abrirCarrinho(true));
+$("fecharCarrinho").addEventListener("click", () => abrirCarrinho(false));
+$("fundo").addEventListener("click", () => abrirCarrinho(false));
+$("limpar").addEventListener("click", limpar);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") abrirCarrinho(false); });
+
+/* =====================================================================
+   G. INÍCIO  (roda uma vez quando a página abre)
+   ===================================================================== */
+carregarCarrinho();
+if (visiveis()[0]) $("heroCupcake").innerHTML = desenharCupcake(visiveis()[0]);
+renderizarFiltros();
+renderizarVitrine();
+atualizarCarrinho();
+
+/* =====================================================================
+   H. PAINEL DO DONO
+   Funciona sobre um RASCUNHO (cópia dos dados). Nada vai para os clientes
+   até clicar em "Publicar alterações", que grava a nova versão da página.
+   ===================================================================== */
+let rascunho = null;    // cópia editável: { whatsapp, produtos: [...] }
+let sujo = false;       // há mudanças não publicadas?
+let editandoId = null;  // id do produto no formulário, "novo" ou null
+
+const achaRascunho = (id) => rascunho.produtos.find((p) => p.id === id);
+
+// ---------- Acesso com senha ----------
+// A senha nunca é guardada em texto: só o "hash" (impressão digital) dela fica no bloco de dados.
+// Atenção: isto esconde o painel de visitantes, mas quem protege de verdade o site
+// é o token do GitHub (só ele permite gravar mudanças).
+async function hashSenha(texto) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("cupcakes-da-lua:" + texto));
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+
+async function entrarAdmin() {
+  try {
+    if (!LOJA.senhaHash) {
+      // Primeiro acesso: cria a senha
+      const nova = prompt("Primeiro acesso: crie uma senha para o painel (mínimo 6 caracteres).");
+      if (!nova) return;
+      if (nova.length < 6) { alert("Use pelo menos 6 caracteres."); return; }
+      const h = await hashSenha(nova);
+      abrirAdmin();
+      rascunho.senhaHash = h;
+      marcar();
+      $("admMsg").textContent = "Senha criada. Publique o site para ela ficar salva.";
+    } else {
+      const senha = prompt("Senha do painel:");
+      if (senha === null) return;
+      if ((await hashSenha(senha)) !== LOJA.senhaHash) { alert("Senha incorreta."); return; }
+      abrirAdmin();
+    }
+    $("abrirAdmin").hidden = false;
+    try { sessionStorage.setItem("adm-ok", "1"); } catch (e) { /* segue sem lembrar a sessão */ }
+  } catch (e) { alert("Não foi possível abrir o painel neste navegador: " + e.message); }
+}
+
+async function trocarSenha() {
+  const nova = prompt("Nova senha (mínimo 6 caracteres):");
+  if (!nova) return;
+  if (nova.length < 6) { alert("Use pelo menos 6 caracteres."); return; }
+  rascunho.senhaHash = await hashSenha(nova);
+  marcar();
+  $("admMsg").textContent = "Senha alterada. Publique o site para valer.";
+}
+
+function sairAdmin() {
+  fecharAdmin();
+  if (!$("admin").hidden) return;          // cancelou ao ser avisado das mudanças
+  $("abrirAdmin").hidden = true;
+  try { sessionStorage.removeItem("adm-ok"); } catch (e) { /* ok */ }
+}
+
+// Liga os botões da área do dono e abre o login se o endereço terminar em #admin
+function iniciarAdmin() {
+  $("linkAdmin").addEventListener("click", (e) => { e.preventDefault(); entrarAdmin(); });
+  $("admBaixar").addEventListener("click", baixarSite);
+  $("admBackup").addEventListener("click", baixarBackup);
+  $("admImportar").addEventListener("change", (e) => { if (e.target.files[0]) importarBackup(e.target.files[0]); e.target.value = ""; });
+  $("admSenha").addEventListener("click", trocarSenha);
+  $("admSair").addEventListener("click", sairAdmin);
+  try { if (sessionStorage.getItem("adm-ok")) $("abrirAdmin").hidden = false; } catch (e) { /* ok */ }
+  if (location.hash === "#admin") entrarAdmin();
+}
+
+function abrirAdmin() {
+  rascunho = JSON.parse(JSON.stringify(LOJA));
+  sujo = false; editandoId = null;
+  $("admForm").hidden = true; $("admMsg").textContent = "";
+  $("admZap").value = rascunho.whatsapp;
+  carregarConfigGit();
+  $("admin").hidden = false;
+  renderAdmin();
+}
+function fecharAdmin() {
+  if (sujo && !confirm("Descartar as alterações que ainda não foram publicadas?")) return;
+  $("admin").hidden = true;
+}
+function marcar() { sujo = true; renderAdmin(); }
+
+// Desenha resumo e lista de produtos do painel
+function renderAdmin() {
+  const ps = rascunho.produtos, baixo = CONFIG.estoqueBaixo;
+  $("admResumo").innerHTML =
+    `<div><b>${ps.length}</b>cupcakes cadastrados</div>` +
+    `<div><b>${ps.reduce((t, p) => t + p.estoque, 0)}</b>unidades em estoque</div>` +
+    `<div><b>${ps.filter((p) => p.estoque <= 0).length}</b>esgotados</div>` +
+    `<div><b>${ps.filter((p) => p.estoque > 0 && p.estoque <= baixo).length}</b>com estoque baixo</div>`;
+
+  $("admLista").innerHTML = ps.length ? ps.map((p) => {
+    const oculto = p.ativo === false;
+    const status = oculto ? `<span class="tag">Oculto na vitrine</span>`
+      : p.estoque <= 0 ? `<span class="tag ruim">Esgotado</span>`
+      : p.estoque <= baixo ? `<span class="tag alerta">Estoque baixo</span>`
+      : `<span class="tag">Disponível</span>`;
+    return `<div class="linha">
+      <div class="mini">${desenharCupcake(p)}</div>
+      <div><b>${esc(p.nome)}</b><small>${esc(p.categoria)} · ${formatarMoeda(p.preco)}</small>${status}</div>
+      <div class="qtd">
+        <button data-est-menos="${p.id}" aria-label="Diminuir estoque">−</button>
+        <input type="number" min="0" value="${p.estoque}" data-est-input="${p.id}" aria-label="Estoque de ${esc(p.nome)}">
+        <button data-est-mais="${p.id}" aria-label="Aumentar estoque">+</button>
+      </div>
+      <div class="extra">
+        <label><input type="checkbox" data-vis="${p.id}" ${oculto ? "" : "checked"}> Visível na vitrine</label>
+        <span><button class="bt" data-editar="${p.id}">Editar</button> <button class="bt perigo" data-excluir="${p.id}">Excluir</button></span>
+      </div>
+    </div>`;
+  }).join("") : `<p class="nota">Nenhum cupcake cadastrado. Clique em “Adicionar cupcake”.</p>`;
+
+  $("admPublicar").disabled = !sujo;
+}
+
+// Altera o estoque (nunca abaixo de zero)
+function definirEstoque(id, valor) {
+  achaRascunho(id).estoque = Math.max(0, Math.floor(Number(valor) || 0));
+  marcar();
+}
+
+// Formulário de cadastro/edição ("novo" cria um cupcake)
+function abrirForm(id) {
+  editandoId = id;
+  const p = id === "novo"
+    ? { nome: "", descricao: "", preco: 9.5, categoria: "Clássicos", estoque: 10, topo: "cereja",
+        cores: { massa: "#f3d9a4", cobertura: "#ffb3c7", forma: "#e85d8a", fundo: "#ffe3ec" } }
+    : achaRascunho(id);
+  const cats = [...new Set(rascunho.produtos.map((x) => x.categoria))];
+  const opTopo = [["cereja", "Cereja"], ["granulado", "Granulado"], ["estrela", "Estrela"], ["lua", "Lua"]]
+    .map(([v, n]) => `<option value="${v}" ${p.topo === v ? "selected" : ""}>${n}</option>`).join("");
+  $("admForm").innerHTML = `
+    <label>Nome<input id="fNome" value="${esc(p.nome)}"></label>
+    <label>Preço (R$)<input id="fPreco" inputmode="decimal" value="${p.preco}"></label>
+    <label>Categoria<input id="fCat" list="listaCats" value="${esc(p.categoria)}"></label>
+    <datalist id="listaCats">${cats.map((c) => `<option value="${esc(c)}">`).join("")}</datalist>
+    <label>Estoque<input id="fEst" type="number" min="0" value="${p.estoque}"></label>
+    <label class="largo">Descrição<input id="fDesc" value="${esc(p.descricao)}"></label>
+    <label>Enfeite<select id="fTopo">${opTopo}</select></label>
+    <label>Cor da massa<input id="fMassa" type="color" value="${p.cores.massa}"></label>
+    <label>Cor da cobertura<input id="fCob" type="color" value="${p.cores.cobertura}"></label>
+    <label>Cor da forminha<input id="fForma" type="color" value="${p.cores.forma}"></label>
+    <label>Cor do fundo do cartão<input id="fFundo" type="color" value="${p.cores.fundo}"></label>
+    <div class="largo"><span id="fErro" style="color:#c0392b"></span>
+      <button class="bt primario" data-acao="salvar">${id === "novo" ? "Adicionar" : "Salvar"}</button>
+      <button class="bt" data-acao="cancelar">Cancelar</button></div>`;
+  $("admForm").hidden = false;
+  $("admForm").scrollIntoView({ block: "nearest" });
+}
+function fecharForm() { editandoId = null; $("admForm").hidden = true; }
+
+// Cria um id único a partir do nome: "Doce de Leite" → "doce-de-leite-k2x9"
+const gerarId = (nome) => nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now().toString(36);
+
+function salvarForm() {
+  const nome = $("fNome").value.trim();
+  const preco = parseFloat(String($("fPreco").value).replace(",", "."));
+  if (!nome) { $("fErro").textContent = "Informe o nome. "; return; }
+  if (!(preco >= 0)) { $("fErro").textContent = "Informe um preço válido. "; return; }
+  const dados = {
+    nome, preco, descricao: $("fDesc").value.trim(),
+    categoria: $("fCat").value.trim() || "Outros",
+    estoque: Math.max(0, Math.floor(Number($("fEst").value) || 0)),
+    topo: $("fTopo").value,
+    cores: { massa: $("fMassa").value, cobertura: $("fCob").value, forma: $("fForma").value, fundo: $("fFundo").value }
+  };
+  if (editandoId === "novo") rascunho.produtos.push({ id: gerarId(nome), ativo: true, ...dados });
+  else Object.assign(achaRascunho(editandoId), dados);
+  fecharForm(); marcar();
+}
+
+// ---------- Publicação ----------
+// Monta o HTML completo do site com os dados do rascunho dentro do bloco "dados-loja"
+function gerarHtml() {
+  const json = JSON.stringify(rascunho, null, 1).replace(/</g, "\\u003c");
+  return HTML_ORIGINAL.replace(/(<script type="application\/json" id="dados-loja">)[\s\S]*?(<\/script>)/,
+    (m, abre, fecha) => abre + "\n" + json + "\n" + fecha);
+}
+
+// Depois de publicar/baixar, a página passa a usar os dados novos
+function aplicarPublicado(html) {
+  HTML_ORIGINAL = html;
+  LOJA.whatsapp = rascunho.whatsapp;
+  LOJA.senhaHash = rascunho.senhaHash;
+  LOJA.produtos = JSON.parse(JSON.stringify(rascunho.produtos));
+  PRODUTOS = LOJA.produtos;
+  CONFIG.whatsapp = LOJA.whatsapp;
+  sujo = false;
+  carregarCarrinho(); atualizarCarrinho();
+  renderizarFiltros(); renderizarVitrine(); renderAdmin();
+}
+
+// Salva um arquivo no computador
+function baixarArquivo(nome, texto, tipo) {
+  const url = URL.createObjectURL(new Blob([texto], { type: tipo }));
+  const a = document.createElement("a");
+  a.href = url; a.download = nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Opção 1: baixa o site atualizado (envie o arquivo ao GitHub, substituindo o index.html)
+function baixarSite() {
+  const html = gerarHtml();
+  baixarArquivo("index.html", html, "text/html");
+  aplicarPublicado(html);
+  $("admMsg").textContent = "Arquivo baixado. Envie-o ao GitHub no lugar do index.html.";
+}
+
+// Configurações do GitHub (ficam só neste navegador)
+const CHAVE_GIT = "cupcakes-da-lua-github";
+function carregarConfigGit() {
+  let c = {};
+  try { c = JSON.parse(localStorage.getItem(CHAVE_GIT) || "{}"); } catch (e) { c = {}; }
+  $("gitRepo").value = c.repo || "";
+  $("gitBranch").value = c.branch || "main";
+  $("gitCaminho").value = c.caminho || "index.html";
+  $("gitToken").value = c.token || "";
+}
+function lerConfigGit() {
+  const c = { repo: $("gitRepo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, "").replace(/\/+$/, ""), branch: $("gitBranch").value.trim() || "main",
+              caminho: $("gitCaminho").value.trim() || "index.html", token: $("gitToken").value.replace(/\s+/g, "") };
+  try { localStorage.setItem(CHAVE_GIT, JSON.stringify(c)); } catch (e) { /* segue sem salvar */ }
+  return c;
+}
+const erroGit = (st) => new Error(
+  st === 401 ? "Token inválido ou expirado." :
+  st === 403 ? "O token não tem permissão de escrita neste repositório." :
+  st === 404 ? "Repositório, branch ou token não encontrado. Confira os dados." :
+  st === 409 || st === 422 ? "O arquivo mudou no GitHub. Recarregue o site e tente de novo." :
+  "O GitHub recusou o envio (erro " + st + ").");
+
+// Opção 2: grava o index.html direto no repositório pela API do GitHub
+async function publicar() {
+  const msg = $("admMsg"), c = lerConfigGit();
+  if (!c.repo.includes("/") || !c.token) {
+    msg.textContent = "Preencha repositório e token em “Publicação no GitHub”.";
+    $("admGit").scrollIntoView({ block: "center" });
+    return;
+  }
+  if (/[^\x21-\x7E]/.test(c.token)) { msg.textContent = "O token tem caracteres inválidos. Copie-o de novo direto do GitHub."; return; }
+  msg.textContent = "Publicando no GitHub…";
+  $("admPublicar").disabled = true;
+  const url = `https://api.github.com/repos/${c.repo}/contents/${encodeURI(c.caminho)}`;
+  const cab = { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+  try {
+    const html = gerarHtml();
+    // 1) descobre a versão atual do arquivo (o GitHub exige o "sha" para atualizar)
+    const atual = await fetch(url + "?ref=" + encodeURIComponent(c.branch), { headers: cab });
+    let sha;
+    if (atual.ok) sha = (await atual.json()).sha;
+    else if (atual.status !== 404) throw erroGit(atual.status);
+    // 2) envia o novo conteúdo (convertido para base64)
+    let bin = ""; new TextEncoder().encode(html).forEach((b) => { bin += String.fromCharCode(b); });
+    const corpo = { message: "Atualiza a loja pelo painel", content: btoa(bin), branch: c.branch };
+    if (sha) corpo.sha = sha;
+    const r = await fetch(url, { method: "PUT", headers: { ...cab, "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
+    if (!r.ok) throw erroGit(r.status);
+    aplicarPublicado(html);
+    msg.textContent = "Publicado! O GitHub Pages leva cerca de 1 minuto para atualizar o site.";
+  } catch (e) {
+    msg.textContent = e instanceof TypeError ? "Falha ao falar com o GitHub (" + e.message + "). Confira o token e se algum bloqueador ou antivírus está bloqueando api.github.com." : e.message;
+  } finally {
+    $("admPublicar").disabled = !sujo;
+  }
+}
+
+// ---------- Backup ----------
+function baixarBackup() {
+  baixarArquivo("backup-cupcakes-da-lua.json", JSON.stringify({ whatsapp: rascunho.whatsapp, produtos: rascunho.produtos }, null, 1), "application/json");
+}
+function importarBackup(arquivo) {
+  const leitor = new FileReader();
+  leitor.onload = () => {
+    try {
+      const d = JSON.parse(leitor.result);
+      if (!Array.isArray(d.produtos)) throw new Error("formato");
+      rascunho.produtos = d.produtos;
+      if (d.whatsapp) rascunho.whatsapp = String(d.whatsapp).replace(/\D/g, "");
+      $("admZap").value = rascunho.whatsapp;
+      marcar();
+      $("admMsg").textContent = "Backup carregado. Publique para valer.";
+    } catch (e) { $("admMsg").textContent = "Arquivo de backup inválido."; }
+  };
+  leitor.readAsText(arquivo);
+}
+
+// Cliques e campos do painel
+$("abrirAdmin").addEventListener("click", abrirAdmin);
+$("admFechar").addEventListener("click", fecharAdmin);
+$("admPublicar").addEventListener("click", publicar);
+$("admNovo").addEventListener("click", () => abrirForm("novo"));
+$("admin").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.estMenos) definirEstoque(d.estMenos, achaRascunho(d.estMenos).estoque - 1);
+  else if (d.estMais) definirEstoque(d.estMais, achaRascunho(d.estMais).estoque + 1);
+  else if (d.editar) abrirForm(d.editar);
+  else if (d.excluir) { if (confirm("Excluir este cupcake da loja?")) { rascunho.produtos = rascunho.produtos.filter((p) => p.id !== d.excluir); marcar(); } }
+  else if (d.acao === "salvar") salvarForm();
+  else if (d.acao === "cancelar") fecharForm();
+});
+$("admin").addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.dataset.estInput) definirEstoque(t.dataset.estInput, t.value);
+  else if (t.dataset.vis) { achaRascunho(t.dataset.vis).ativo = t.checked; marcar(); }
+  else if (t.id === "admZap") { rascunho.whatsapp = t.value.replace(/\D/g, ""); marcar(); }
+});
+
+iniciarAdmin();
+</script>
+</body>
+</html>
